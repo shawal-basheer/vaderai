@@ -10,3 +10,9 @@ Date: 28 April 2026
 Decision: Selected FastAPI, LangChain, Claude API, and Open-Meteo for the backend.
 Reason: FastAPI is modern and fast. LangChain simplifies AI agent building. 
 Open-Meteo is completely free with no API key required.
+
+## Decision 3 - Weather API
+Date: 28 April 2026
+Decision: Used Open-Meteo API for all weather data.
+Reason: Completely free, no API key required, covers live weather, 
+historical data and climate change data globally.

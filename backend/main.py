@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from weather import get_current_weather
 
 # Create the FastAPI app
 app = FastAPI(
@@ -21,3 +22,13 @@ app.add_middleware(
 @app.get("/")
 def home():
     return {"message": "Welcome to VäderAI!", "status": "running"}
+
+# Weather route - get current weather for any city
+@app.get("/weather/{city}")
+def weather(city: str):
+    """
+    Get current weather for any city
+    Example: /weather/London
+    """
+    result = get_current_weather(city)
+    return result

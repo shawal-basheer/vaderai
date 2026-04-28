@@ -1,2 +1,1 @@
-# vaderai
-AI-powered global weather intelligence agent
+VäderAI - AI Powered Weather Intelligence Agent

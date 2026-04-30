@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from weather import get_current_weather
+from agent import ask_agent
+from pydantic import BaseModel
 
 # Create the FastAPI app
 app = FastAPI(
@@ -18,17 +20,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Test route - just to check everything is working
+# Model for chat request
+class ChatRequest(BaseModel):
+    message: str
+
+# Test route
 @app.get("/")
 def home():
     return {"message": "Welcome to VäderAI!", "status": "running"}
 
-# Weather route - get current weather for any city
+# Weather route - get raw weather data
 @app.get("/weather/{city}")
 def weather(city: str):
-    """
-    Get current weather for any city
-    Example: /weather/London
-    """
     result = get_current_weather(city)
     return result
+
+# Chat route - talk to the AI agent
+@app.post("/chat")
+def chat(request: ChatRequest):
+    """
+    Send a message to VäderAI agent
+    Example: {"message": "What is the weather in Tokyo?"}
+    """
+    response = ask_agent(request.message)
+    return {"response": response}

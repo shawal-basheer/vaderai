@@ -16,3 +16,9 @@ Date: 28 April 2026
 Decision: Used Open-Meteo API for all weather data.
 Reason: Completely free, no API key required, covers live weather, 
 historical data and climate change data globally.
+
+## Decision 4 - AI Model Selection
+Date: 30 April 2026
+Decision: Used Groq API with llama-3.3-70b-versatile model instead of Claude API.
+Reason: Groq is completely free with no credit card required. 
+llama3-70b-8192 was decommissioned so switched to llama-3.3-70b-versatile.

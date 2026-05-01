@@ -133,3 +133,48 @@ def get_city_from_coordinates(latitude: float, longitude: float):
         "Sundsvall"
     )
     return city
+
+def get_weather_alerts(city: str):
+    """
+    Check for extreme weather conditions in any city
+    """
+    weather = get_current_weather(city)
+    
+    if "error" in weather:
+        return {"alerts": []}
+    
+    alerts = []
+    
+    # Check for extreme heat
+    if weather["temperature"] >= 35:
+        alerts.append({
+            "type": "heat",
+            "severity": "high",
+            "message": f"Extreme heat warning in {weather['city']}! Temperature is {weather['temperature']}°C"
+        })
+    
+    # Check for freezing temperature
+    if weather["temperature"] <= -10:
+        alerts.append({
+            "type": "cold",
+            "severity": "high", 
+            "message": f"Extreme cold warning in {weather['city']}! Temperature is {weather['temperature']}°C"
+        })
+    
+    # Check for strong winds
+    if weather["wind_speed"] >= 50:
+        alerts.append({
+            "type": "wind",
+            "severity": "high",
+            "message": f"Strong wind warning in {weather['city']}! Wind speed is {weather['wind_speed']} km/h"
+        })
+    
+    # Check for high humidity
+    if weather["humidity"] >= 90:
+        alerts.append({
+            "type": "humidity",
+            "severity": "medium",
+            "message": f"Very high humidity in {weather['city']}! Humidity is {weather['humidity']}%"
+        })
+
+    return {"city": weather["city"], "alerts": alerts}

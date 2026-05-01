@@ -65,3 +65,47 @@ def get_current_weather(city: str):
         "wind_speed": current["wind_speed_10m"],
         "weather_code": current["weather_code"]
     }
+
+def get_forecast(city: str):
+    """
+    Get 7 day temperature forecast for any city
+    """
+    location = get_coordinates(city)
+    
+    if not location:
+        return {"error": f"City '{city}' not found"}
+    
+    url = "https://api.open-meteo.com/v1/forecast"
+    params = {
+        "latitude": location["latitude"],
+        "longitude": location["longitude"],
+        "daily": [
+            "temperature_2m_max",
+            "temperature_2m_min",
+        ],
+        "timezone": "auto",
+        "forecast_days": 7
+    }
+    
+    response = requests.get(url, params=params)
+    data = response.json()
+    
+    daily = data["daily"]
+    
+    forecast = []
+    days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    
+    for i in range(7):
+        from datetime import datetime
+        date = datetime.strptime(daily["time"][i], "%Y-%m-%d")
+        forecast.append({
+            "day": date.strftime("%a"),
+            "max": daily["temperature_2m_max"][i],
+            "min": daily["temperature_2m_min"][i]
+        })
+    
+    return {
+        "city": location["city"],
+        "country": location["country"],
+        "forecast": forecast
+    }

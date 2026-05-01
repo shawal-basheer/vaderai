@@ -35,6 +35,17 @@ def weather(city: str):
     result = get_current_weather(city)
     return result
 
+from weather import get_current_weather, get_forecast
+
+@app.get("/forecast/{city}")
+def forecast(city: str):
+    """
+    Get 7 day forecast for any city
+    Example: /forecast/London
+    """
+    result = get_forecast(city)
+    return result
+
 # Chat route - talk to the AI agent
 @app.post("/chat")
 def chat(request: ChatRequest):

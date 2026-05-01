@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import axios from 'axios'
 
-function ChatBox({ darkMode, onWeatherUpdate, onCompare }) {
+function ChatBox({ darkMode, onWeatherUpdate, onCompare, onTravel }) {
   const [messages, setMessages] = useState([
     {
       role: 'ai',
@@ -23,29 +23,27 @@ function ChatBox({ darkMode, onWeatherUpdate, onCompare }) {
     const userMessage = input.trim()
     setInput('')
 
-    // Add user message to chat
     setMessages(prev => [...prev, { role: 'user', text: userMessage }])
     setLoading(true)
 
     try {
-      // Send to AI agent
       const response = await axios.post('http://127.0.0.1:8000/chat', {
         message: userMessage
       })
 
+      const { response: aiText, action, data } = response.data
+
       // Add AI response to chat
-      setMessages(prev => [...prev, { role: 'ai', text: response.data.response }])
+      setMessages(prev => [...prev, { role: 'ai', text: aiText }])
 
-      // Check if user asked to compare cities
-      const compareMatch = userMessage.match(/compare\s+([a-zA-Z\s]+)\s+(?:vs|versus|and)\s+([a-zA-Z\s]+)/i)
-      if (compareMatch) {
-        onCompare(compareMatch[1].trim(), compareMatch[2].trim())
-      }
-
-      // Check if user asked about a specific city weather
-      const cityMatch = userMessage.match(/weather in ([a-zA-Z\s]+)/i)
-      if (cityMatch && !compareMatch) {
-        onWeatherUpdate(cityMatch[1].trim())
+      // Let the backend decide what to show on dashboard
+      if (action === 'show_weather' && data !== 'none') {
+        onWeatherUpdate(data)
+      } else if (action === 'show_compare' && data !== 'none') {
+        const [city1, city2] = data.split(',')
+        onCompare(city1.trim(), city2.trim())
+      } else if (action === 'show_travel' && data !== 'none') {
+        onTravel(data)
       }
 
     } catch (error) {

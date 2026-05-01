@@ -5,6 +5,7 @@ import WeatherCard from './components/WeatherCard'
 import ForecastChart from './components/ForecastChart'
 import AlertBanner from './components/AlertBanner'
 import CompareCard from './components/CompareCard'
+import TravelCard from './components/TravelCard'
 import ChatBox from './components/ChatBox'
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
   const [forecast, setForecast] = useState([])
   const [alerts, setAlerts] = useState([])
   const [compareData, setCompareData] = useState(null)
+  const [travelData, setTravelData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [locationStatus, setLocationStatus] = useState('Detecting your location...')
 
@@ -49,6 +51,7 @@ function App() {
   const fetchWeather = async (city) => {
     setLoading(true)
     setCompareData(null)
+    setTravelData(null)
     try {
       const [weatherRes, forecastRes, alertsRes] = await Promise.all([
         axios.get(`http://127.0.0.1:8000/weather/${city}`),
@@ -69,8 +72,19 @@ function App() {
     try {
       const response = await axios.get(`http://127.0.0.1:8000/compare?city1=${city1}&city2=${city2}`)
       setCompareData(response.data)
+      setTravelData(null)
     } catch (error) {
       console.error('Error fetching comparison:', error)
+    }
+  }
+
+  const fetchTravel = async (city) => {
+    try {
+      const response = await axios.get(`http://127.0.0.1:8000/travel/${city}`)
+      setTravelData(response.data)
+      setCompareData(null)
+    } catch (error) {
+      console.error('Error fetching travel data:', error)
     }
   }
 
@@ -86,10 +100,12 @@ function App() {
         <WeatherCard darkMode={darkMode} weather={weather} loading={loading} />
         <ForecastChart darkMode={darkMode} forecast={forecast} />
         {compareData && <CompareCard darkMode={darkMode} compareData={compareData} />}
-        <ChatBox 
-          darkMode={darkMode} 
+        {travelData && <TravelCard darkMode={darkMode} travelData={travelData} />}
+        <ChatBox
+          darkMode={darkMode}
           onWeatherUpdate={fetchWeather}
           onCompare={fetchComparison}
+          onTravel={fetchTravel}
         />
       </div>
     </div>

@@ -201,3 +201,75 @@ def compare_cities(city1: str, city2: str):
             "temp_difference": round(abs(weather1["temperature"] - weather2["temperature"]), 1)
         }
     }
+
+def get_travel_advice(city: str, month: int = None):
+    """
+    Get travel weather advice for any city
+    """
+    location = get_coordinates(city)
+    
+    if not location:
+        return {"error": f"City '{city}' not found"}
+    
+    # Get historical data year by year and calculate monthly averages
+    url = "https://archive-api.open-meteo.com/v1/archive"
+    params = {
+        "latitude": location["latitude"],
+        "longitude": location["longitude"],
+        "start_date": "2020-01-01",
+        "end_date": "2020-12-31",
+        "daily": [
+            "temperature_2m_mean",
+            "precipitation_sum",
+        ],
+        "timezone": "auto"
+    }
+    
+    response = requests.get(url, params=params)
+    data = response.json()
+    
+    months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    
+    monthly_data = []
+    
+    if "daily" in data:
+        from datetime import datetime
+        
+        # Group daily data by month
+        month_temps = {i: [] for i in range(1, 13)}
+        month_precip = {i: [] for i in range(1, 13)}
+        
+        dates = data["daily"]["time"]
+        temps = data["daily"]["temperature_2m_mean"]
+        precips = data["daily"]["precipitation_sum"]
+        
+        for i, date_str in enumerate(dates):
+            month_num = datetime.strptime(date_str, "%Y-%m-%d").month
+            if temps[i] is not None:
+                month_temps[month_num].append(temps[i])
+            if precips[i] is not None:
+                month_precip[month_num].append(precips[i])
+        
+        for m in range(1, 13):
+            avg_temp = round(sum(month_temps[m]) / len(month_temps[m]), 1) if month_temps[m] else None
+            avg_precip = round(sum(month_precip[m]), 1) if month_precip[m] else None
+            monthly_data.append({
+                "month": months[m-1],
+                "avg_temp": avg_temp,
+                "avg_precip": avg_precip
+            })
+    
+    # Find best month to visit
+    best_month = None
+    if monthly_data:
+        valid = [m for m in monthly_data if m["avg_temp"] is not None]
+        if valid:
+            best_month = max(valid, key=lambda x: x["avg_temp"])["month"]
+    
+    return {
+        "city": location["city"],
+        "country": location["country"],
+        "monthly_averages": monthly_data,
+        "best_month": best_month
+    }

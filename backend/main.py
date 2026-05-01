@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from weather import get_current_weather, get_forecast, get_city_from_coordinates, get_weather_alerts
+from weather import get_current_weather, get_forecast, get_city_from_coordinates, get_weather_alerts, compare_cities
 from agent import ask_agent
 from pydantic import BaseModel
 
@@ -51,6 +51,12 @@ def location(lat: float, lon: float):
 @app.get("/alerts/{city}")
 def alerts(city: str):
     result = get_weather_alerts(city)
+    return result
+
+# Compare route
+@app.get("/compare")
+def compare(city1: str, city2: str):
+    result = compare_cities(city1, city2)
     return result
 
 # Chat route

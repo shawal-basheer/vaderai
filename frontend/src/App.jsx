@@ -4,6 +4,7 @@ import Navbar from './components/Navbar'
 import WeatherCard from './components/WeatherCard'
 import ForecastChart from './components/ForecastChart'
 import AlertBanner from './components/AlertBanner'
+import CompareCard from './components/CompareCard'
 import ChatBox from './components/ChatBox'
 
 function App() {
@@ -11,6 +12,7 @@ function App() {
   const [weather, setWeather] = useState(null)
   const [forecast, setForecast] = useState([])
   const [alerts, setAlerts] = useState([])
+  const [compareData, setCompareData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [locationStatus, setLocationStatus] = useState('Detecting your location...')
 
@@ -46,6 +48,7 @@ function App() {
 
   const fetchWeather = async (city) => {
     setLoading(true)
+    setCompareData(null)
     try {
       const [weatherRes, forecastRes, alertsRes] = await Promise.all([
         axios.get(`http://127.0.0.1:8000/weather/${city}`),
@@ -62,6 +65,15 @@ function App() {
     }
   }
 
+  const fetchComparison = async (city1, city2) => {
+    try {
+      const response = await axios.get(`http://127.0.0.1:8000/compare?city1=${city1}&city2=${city2}`)
+      setCompareData(response.data)
+    } catch (error) {
+      console.error('Error fetching comparison:', error)
+    }
+  }
+
   return (
     <div className={darkMode ? 'bg-gray-900 min-h-screen' : 'bg-gray-100 min-h-screen'}>
       <Navbar
@@ -73,7 +85,12 @@ function App() {
         <AlertBanner darkMode={darkMode} alerts={alerts} />
         <WeatherCard darkMode={darkMode} weather={weather} loading={loading} />
         <ForecastChart darkMode={darkMode} forecast={forecast} />
-        <ChatBox darkMode={darkMode} onWeatherUpdate={fetchWeather} />
+        {compareData && <CompareCard darkMode={darkMode} compareData={compareData} />}
+        <ChatBox 
+          darkMode={darkMode} 
+          onWeatherUpdate={fetchWeather}
+          onCompare={fetchComparison}
+        />
       </div>
     </div>
   )

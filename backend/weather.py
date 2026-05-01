@@ -178,3 +178,26 @@ def get_weather_alerts(city: str):
         })
 
     return {"city": weather["city"], "alerts": alerts}
+
+def compare_cities(city1: str, city2: str):
+    """
+    Compare weather between two cities
+    """
+    weather1 = get_current_weather(city1)
+    weather2 = get_current_weather(city2)
+    
+    if "error" in weather1:
+        return {"error": f"City '{city1}' not found"}
+    if "error" in weather2:
+        return {"error": f"City '{city2}' not found"}
+    
+    return {
+        "city1": weather1,
+        "city2": weather2,
+        "comparison": {
+            "hotter": weather1["city"] if weather1["temperature"] > weather2["temperature"] else weather2["city"],
+            "more_humid": weather1["city"] if weather1["humidity"] > weather2["humidity"] else weather2["city"],
+            "windier": weather1["city"] if weather1["wind_speed"] > weather2["wind_speed"] else weather2["city"],
+            "temp_difference": round(abs(weather1["temperature"] - weather2["temperature"]), 1)
+        }
+    }

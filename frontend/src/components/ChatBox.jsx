@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import axios from 'axios'
 
-function ChatBox({ darkMode, onWeatherUpdate }) {
+function ChatBox({ darkMode, onWeatherUpdate, onCompare }) {
   const [messages, setMessages] = useState([
     {
       role: 'ai',
@@ -36,9 +36,15 @@ function ChatBox({ darkMode, onWeatherUpdate }) {
       // Add AI response to chat
       setMessages(prev => [...prev, { role: 'ai', text: response.data.response }])
 
-      // Check if user asked about a city and update dashboard
+      // Check if user asked to compare cities
+      const compareMatch = userMessage.match(/compare\s+([a-zA-Z\s]+)\s+(?:vs|versus|and)\s+([a-zA-Z\s]+)/i)
+      if (compareMatch) {
+        onCompare(compareMatch[1].trim(), compareMatch[2].trim())
+      }
+
+      // Check if user asked about a specific city weather
       const cityMatch = userMessage.match(/weather in ([a-zA-Z\s]+)/i)
-      if (cityMatch) {
+      if (cityMatch && !compareMatch) {
         onWeatherUpdate(cityMatch[1].trim())
       }
 
@@ -59,35 +65,30 @@ function ChatBox({ darkMode, onWeatherUpdate }) {
 
   // Text to speech
   const speak = (text) => {
-  // Stop any current speech
-  window.speechSynthesis.cancel()
+    window.speechSynthesis.cancel()
+    const cleanText = text
+      .replace(/[🌤️🌡️💨💧🌍✈️⚠️🔊]/g, '')
+      .replace(/\*\*/g, '')
+      .replace(/\*/g, '')
+      .replace(/#{1,6}/g, '')
+      .trim()
 
-  // Clean the text before speaking
-  const cleanText = text
-    .replace(/[🌤️🌡️💨💧🌍✈️⚠️🔊]/g, '') // remove emojis
-    .replace(/\*\*/g, '')                    // remove bold markdown
-    .replace(/\*/g, '')                      // remove italic markdown
-    .replace(/#{1,6}/g, '')                  // remove headers
-    .trim()
+    const utterance = new SpeechSynthesisUtterance(cleanText)
+    utterance.lang = 'en-US'
+    utterance.rate = 0.9
+    utterance.pitch = 1.0
+    utterance.volume = 1.0
 
-  const utterance = new SpeechSynthesisUtterance(cleanText)
-  utterance.lang = 'en-US'
-  utterance.rate = 0.9      // slightly slower — more natural
-  utterance.pitch = 1.0     // normal pitch
-  utterance.volume = 1.0    // full volume
-
-  // Use the best available voice
-  const voices = window.speechSynthesis.getVoices()
-  const preferred = voices.find(v =>
-    v.name.includes('Google') ||
-    v.name.includes('Natural') ||
-    v.name.includes('Samantha') ||
-    v.name.includes('Karen')
-  )
-  if (preferred) utterance.voice = preferred
-
-  window.speechSynthesis.speak(utterance)
-}
+    const voices = window.speechSynthesis.getVoices()
+    const preferred = voices.find(v =>
+      v.name.includes('Google') ||
+      v.name.includes('Natural') ||
+      v.name.includes('Samantha') ||
+      v.name.includes('Karen')
+    )
+    if (preferred) utterance.voice = preferred
+    window.speechSynthesis.speak(utterance)
+  }
 
   return (
     <div className={`rounded-2xl ${darkMode ? 'bg-gray-800' : 'bg-white shadow-md'}`}>
@@ -127,7 +128,7 @@ function ChatBox({ darkMode, onWeatherUpdate }) {
       <div className="px-6 py-4 h-64 overflow-y-auto flex flex-col gap-3">
         {messages.map((msg, i) => (
           <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            
+
             {/* AI avatar */}
             {msg.role === 'ai' && (
               <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">

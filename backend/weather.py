@@ -109,3 +109,27 @@ def get_forecast(city: str):
         "country": location["country"],
         "forecast": forecast
     }
+
+def get_city_from_coordinates(latitude: float, longitude: float):
+    """
+    Get city name from latitude and longitude
+    """
+    url = "https://nominatim.openstreetmap.org/reverse"
+    params = {
+        "lat": latitude,
+        "lon": longitude,
+        "format": "json"
+    }
+    headers = {
+        "User-Agent": "VäderAI/1.0"
+    }
+    response = requests.get(url, params=params, headers=headers)
+    data = response.json()
+    
+    city = (
+        data.get("address", {}).get("city") or
+        data.get("address", {}).get("town") or
+        data.get("address", {}).get("village") or
+        "Sundsvall"
+    )
+    return city

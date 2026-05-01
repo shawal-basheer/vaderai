@@ -10,10 +10,42 @@ function App() {
   const [weather, setWeather] = useState(null)
   const [forecast, setForecast] = useState([])
   const [loading, setLoading] = useState(true)
+  const [locationStatus, setLocationStatus] = useState('Detecting your location...')
 
   useEffect(() => {
-    fetchWeather('Sundsvall')
+    detectLocation()
   }, [])
+
+  const detectLocation = () => {
+    // Check if browser supports geolocation
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords
+          try {
+            // Get city name from coordinates
+            const response = await axios.get(`http://127.0.0.1:8000/location?lat=${latitude}&lon=${longitude}`)
+            const city = response.data.city
+            setLocationStatus(`📍 ${city} `)
+            fetchWeather(city)
+          } catch (error) {
+            // If location API fails fallback to Sundsvall
+            setLocationStatus('📍 Sundsvall')
+            fetchWeather('Sundsvall')
+          }
+        },
+        () => {
+          // If user denies location fallback to Sundsvall
+          setLocationStatus('📍 Sundsvall')
+          fetchWeather('Sundsvall')
+        }
+      )
+    } else {
+      // If browser doesnt support geolocation
+      setLocationStatus('📍 Sundsvall')
+      fetchWeather('Sundsvall')
+    }
+  }
 
   const fetchWeather = async (city) => {
     setLoading(true)
@@ -33,7 +65,11 @@ function App() {
 
   return (
     <div className={darkMode ? 'bg-gray-900 min-h-screen' : 'bg-gray-100 min-h-screen'}>
-      <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
+      <Navbar 
+        darkMode={darkMode} 
+        setDarkMode={setDarkMode}
+        locationStatus={locationStatus}
+      />
       <div className="p-6 max-w-4xl mx-auto flex flex-col gap-6">
         <WeatherCard darkMode={darkMode} weather={weather} loading={loading} />
         <ForecastChart darkMode={darkMode} forecast={forecast} />

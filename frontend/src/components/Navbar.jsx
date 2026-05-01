@@ -1,4 +1,4 @@
-function Navbar({ darkMode, setDarkMode }) {
+function Navbar({ darkMode, setDarkMode, locationStatus }) {
   return (
     <nav className={`flex items-center justify-between px-6 py-4 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
       
@@ -10,6 +10,11 @@ function Navbar({ darkMode, setDarkMode }) {
         <span className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
           Weather Intelligence
         </span>
+      </div>
+
+      {/* Location status */}
+      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+        {locationStatus}
       </div>
 
       {/* Dark/Light toggle */}

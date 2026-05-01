@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from weather import get_current_weather
+from weather import get_current_weather, get_forecast, get_city_from_coordinates
 from agent import ask_agent
 from pydantic import BaseModel
 
@@ -29,29 +29,26 @@ class ChatRequest(BaseModel):
 def home():
     return {"message": "Welcome to VäderAI!", "status": "running"}
 
-# Weather route - get raw weather data
+# Weather route
 @app.get("/weather/{city}")
 def weather(city: str):
     result = get_current_weather(city)
     return result
 
-from weather import get_current_weather, get_forecast
-
+# Forecast route
 @app.get("/forecast/{city}")
 def forecast(city: str):
-    """
-    Get 7 day forecast for any city
-    Example: /forecast/London
-    """
     result = get_forecast(city)
     return result
 
-# Chat route - talk to the AI agent
+# Location route
+@app.get("/location")
+def location(lat: float, lon: float):
+    city = get_city_from_coordinates(lat, lon)
+    return {"city": city}
+
+# Chat route
 @app.post("/chat")
 def chat(request: ChatRequest):
-    """
-    Send a message to VäderAI agent
-    Example: {"message": "What is the weather in Tokyo?"}
-    """
     response = ask_agent(request.message)
     return {"response": response}

@@ -6,6 +6,7 @@ import ForecastChart from './components/ForecastChart'
 import AlertBanner from './components/AlertBanner'
 import CompareCard from './components/CompareCard'
 import TravelCard from './components/TravelCard'
+import ClimateChart from './components/ClimateChart'
 import ChatBox from './components/ChatBox'
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
   const [alerts, setAlerts] = useState([])
   const [compareData, setCompareData] = useState(null)
   const [travelData, setTravelData] = useState(null)
+  const [climateData, setClimateData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [locationStatus, setLocationStatus] = useState('Detecting your location...')
 
@@ -52,6 +54,7 @@ function App() {
     setLoading(true)
     setCompareData(null)
     setTravelData(null)
+    setClimateData(null)
     try {
       const [weatherRes, forecastRes, alertsRes] = await Promise.all([
         axios.get(`http://127.0.0.1:8000/weather/${city}`),
@@ -73,6 +76,7 @@ function App() {
       const response = await axios.get(`http://127.0.0.1:8000/compare?city1=${city1}&city2=${city2}`)
       setCompareData(response.data)
       setTravelData(null)
+      setClimateData(null)
     } catch (error) {
       console.error('Error fetching comparison:', error)
     }
@@ -83,8 +87,20 @@ function App() {
       const response = await axios.get(`http://127.0.0.1:8000/travel/${city}`)
       setTravelData(response.data)
       setCompareData(null)
+      setClimateData(null)
     } catch (error) {
       console.error('Error fetching travel data:', error)
+    }
+  }
+
+  const fetchClimate = async (city, startYear = 1970) => {
+    try {
+      const response = await axios.get(`http://127.0.0.1:8000/climate/${city}?start_year=${startYear}`)
+      setClimateData(response.data)
+      setCompareData(null)
+      setTravelData(null)
+    } catch (error) {
+      console.error('Error fetching climate data:', error)
     }
   }
 
@@ -106,7 +122,9 @@ function App() {
           onWeatherUpdate={fetchWeather}
           onCompare={fetchComparison}
           onTravel={fetchTravel}
+          onClimate={fetchClimate}
         />
+        {climateData && <ClimateChart darkMode={darkMode} climateData={climateData} />}
       </div>
     </div>
   )

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import axios from 'axios'
 
-function ChatBox({ darkMode, onWeatherUpdate, onCompare, onTravel }) {
+function ChatBox({ darkMode, onWeatherUpdate, onCompare, onTravel, onClimate }) {
   const [messages, setMessages] = useState([
     {
       role: 'ai',
@@ -12,10 +12,107 @@ function ChatBox({ darkMode, onWeatherUpdate, onCompare, onTravel }) {
   const [loading, setLoading] = useState(false)
   const messagesEndRef = useRef(null)
 
-  // Auto scroll to bottom when new message arrives
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  const CLIMATE_KEYWORDS = [
+    'climate', 'historical', 'history', 'warming', 'warmer', 'hotter', 'cooler',
+    'colder', 'temperature change', 'changed', 'over the years', 'over years',
+    'past years', 'last years', 'decades', 'since 19', 'since 20', '50 years',
+    '40 years', '30 years', '20 years', '10 years', 'long term', 'trend',
+    'getting hotter', 'getting warmer', 'getting colder', 'used to be',
+    'years ago', 'historically', 'rise in temperature', 'temperature rise',
+    'global warming', 'climate change', 'how hot was', 'how cold was',
+    'temperature history', 'weather history', 'past temperature', 'old weather'
+  ]
+
+  const hasClimateIntent = (text) => {
+    const lower = text.toLowerCase()
+    return CLIMATE_KEYWORDS.some(k => lower.includes(k))
+  }
+
+  const extractCity = (text) => {
+  const stopWords = [
+    'what', 'how', 'when', 'where', 'why', 'is', 'was', 'were', 'has', 'have',
+    'been', 'the', 'a', 'an', 'in', 'of', 'for', 'to', 'and', 'or', 'but',
+    'climate', 'change', 'weather', 'temperature', 'historical', 'history',
+    'warming', 'warmer', 'hotter', 'cooler', 'colder', 'past', 'last', 'over',
+    'years', 'year', 'decades', 'since', 'ago', 'long', 'term', 'trend',
+    'getting', 'used', 'be', 'hot', 'cold', 'tell', 'me', 'about', 'give',
+    'show', 'can', 'you', 'please', 'whats', 'old', 'rise', 'global', 'like',
+    'just', 'really', 'very', 'much', 'more', 'less', 'any', 'some', 'that',
+    'this', 'it', 'its', 'than', 'then', 'there', '10', '20', '30', '40',
+    '50', '60', '70', '80', '90', '100', 'changing', 'changes', 'changed',
+    'increase', 'decrease', 'risen', 'dropped', 'difference', 'affect',
+    'impact', 'situation', 'condition', 'faced', 'face', 'seen', 'see',
+    'did', 'does', 'will', 'would', 'could', 'should', 'might', 'may',
+    'which', 'who', 'whose', 'whom', 'with', 'from', 'by', 'at', 'on',
+    'up', 'down', 'out', 'off', 'into', 'onto', 'upon', 'after', 'before',
+    'during', 'while', 'because', 'although', 'though', 'however', 'also',
+    'too', 'so', 'yet', 'still', 'already', 'now', 'then', 'here', 'there',
+    'today', 'yesterday', 'tomorrow', 'always', 'never', 'often', 'usually'
+  ]
+
+  // First try capitalized words (proper nouns)
+  const originalWords = text.replace(/[?!.,]/g, '').split(' ')
+  const properNouns = originalWords.filter(w =>
+    w.length > 2 &&
+    w[0] === w[0].toUpperCase() &&
+    w[0] !== w[0].toLowerCase() &&
+    !stopWords.includes(w.toLowerCase()) &&
+    !['I', 'A'].includes(w)
+  )
+  if (properNouns.length > 0) {
+    return properNouns[properNouns.length - 1]
+  }
+
+  // Then try all words after removing stop words
+  // The city is usually the most meaningful non-stop word
+  const cleanWords = text.toLowerCase()
+    .replace(/[?!.,]/g, '')
+    .split(' ')
+    .filter(w => w.length > 2 && !stopWords.includes(w))
+
+  if (cleanWords.length === 0) return null
+
+  // Return first meaningful word — usually the location comes early
+  // e.g. "sweden weather change" → sweden is first
+  // e.g. "weather change in sweden" → sweden is last
+  // Try to find a word that is NOT a climate/weather word
+  const weatherWords = [
+    'climate', 'weather', 'temperature', 'warming', 'cooling', 'rain',
+    'snow', 'wind', 'humidity', 'forecast', 'storm', 'drought', 'flood'
+  ]
+  
+  const locationWords = cleanWords.filter(w => !weatherWords.includes(w))
+  
+  if (locationWords.length > 0) {
+    const city = locationWords[0]
+    return city.charAt(0).toUpperCase() + city.slice(1)
+  }
+
+  const city = cleanWords[0]
+  return city.charAt(0).toUpperCase() + city.slice(1)
+}
+
+  const extractStartYear = (text) => {
+    const currentYear = new Date().getFullYear()
+    let startYear = 1970
+
+    const yearMatch = text.match(/(\d+)\s*years?/i)
+    if (yearMatch) {
+      startYear = currentYear - parseInt(yearMatch[1])
+    }
+
+    if (text.includes('50 year')) startYear = currentYear - 50
+    else if (text.includes('40 year')) startYear = currentYear - 40
+    else if (text.includes('30 year')) startYear = currentYear - 30
+    else if (text.includes('20 year')) startYear = currentYear - 20
+    else if (text.includes('10 year')) startYear = currentYear - 10
+
+    return Math.max(startYear, 1940)
+  }
 
   const sendMessage = async () => {
     if (!input.trim() || loading) return
@@ -33,10 +130,9 @@ function ChatBox({ darkMode, onWeatherUpdate, onCompare, onTravel }) {
 
       const { response: aiText, action, data } = response.data
 
-      // Add AI response to chat
       setMessages(prev => [...prev, { role: 'ai', text: aiText }])
 
-      // Let the backend decide what to show on dashboard
+      // Handle AI driven actions
       if (action === 'show_weather' && data !== 'none') {
         onWeatherUpdate(data)
       } else if (action === 'show_compare' && data !== 'none') {
@@ -44,6 +140,18 @@ function ChatBox({ darkMode, onWeatherUpdate, onCompare, onTravel }) {
         onCompare(city1.trim(), city2.trim())
       } else if (action === 'show_travel' && data !== 'none') {
         onTravel(data)
+      } else if (action === 'show_climate' && data !== 'none') {
+        const startYear = extractStartYear(userMessage)
+        onClimate(data, startYear)
+      }
+
+      // Smart fallback for climate intent
+      if (action === 'none' && hasClimateIntent(userMessage)) {
+        const city = (data && data !== 'none') ? data : extractCity(userMessage)
+        if (city && city.length > 2) {
+          const startYear = extractStartYear(userMessage)
+          onClimate(city, startYear)
+        }
       }
 
     } catch (error) {
@@ -56,12 +164,10 @@ function ChatBox({ darkMode, onWeatherUpdate, onCompare, onTravel }) {
     }
   }
 
-  // Send message on Enter key
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') sendMessage()
   }
 
-  // Text to speech
   const speak = (text) => {
     window.speechSynthesis.cancel()
     const cleanText = text
@@ -91,7 +197,6 @@ function ChatBox({ darkMode, onWeatherUpdate, onCompare, onTravel }) {
   return (
     <div className={`rounded-2xl ${darkMode ? 'bg-gray-800' : 'bg-white shadow-md'}`}>
 
-      {/* Chat header */}
       <div className={`px-6 py-4 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
         <h3 className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
           Ask VäderAI
@@ -101,12 +206,12 @@ function ChatBox({ darkMode, onWeatherUpdate, onCompare, onTravel }) {
         </p>
       </div>
 
-      {/* Hint pills */}
       <div className="flex gap-2 px-6 pt-4 flex-wrap">
         {[
           'Weather in Tokyo?',
           'Compare Dubai vs Delhi',
-          'Best time to visit Iceland?'
+          'Best time to visit Iceland?',
+          'Climate change in London?'
         ].map((hint, i) => (
           <button
             key={i}
@@ -122,12 +227,10 @@ function ChatBox({ darkMode, onWeatherUpdate, onCompare, onTravel }) {
         ))}
       </div>
 
-      {/* Messages */}
       <div className="px-6 py-4 h-64 overflow-y-auto flex flex-col gap-3">
         {messages.map((msg, i) => (
           <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
 
-            {/* AI avatar */}
             {msg.role === 'ai' && (
               <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                 AI
@@ -135,7 +238,6 @@ function ChatBox({ darkMode, onWeatherUpdate, onCompare, onTravel }) {
             )}
 
             <div className="flex flex-col gap-1 max-w-xs lg:max-w-md">
-              {/* Message bubble */}
               <div className={`px-4 py-2 rounded-2xl text-sm
                 ${msg.role === 'user'
                   ? 'bg-blue-500 text-white'
@@ -144,7 +246,6 @@ function ChatBox({ darkMode, onWeatherUpdate, onCompare, onTravel }) {
                 {msg.text}
               </div>
 
-              {/* Speak button for AI messages */}
               {msg.role === 'ai' && (
                 <button
                   onClick={() => speak(msg.text)}
@@ -155,7 +256,6 @@ function ChatBox({ darkMode, onWeatherUpdate, onCompare, onTravel }) {
               )}
             </div>
 
-            {/* User avatar */}
             {msg.role === 'user' && (
               <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                 SB
@@ -165,7 +265,6 @@ function ChatBox({ darkMode, onWeatherUpdate, onCompare, onTravel }) {
           </div>
         ))}
 
-        {/* Loading indicator */}
         {loading && (
           <div className="flex gap-3 justify-start">
             <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold">
@@ -180,7 +279,6 @@ function ChatBox({ darkMode, onWeatherUpdate, onCompare, onTravel }) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input area */}
       <div className={`px-6 py-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
         <div className="flex gap-3">
           <input

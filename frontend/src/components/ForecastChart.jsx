@@ -1,59 +1,55 @@
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+const getWeatherEmoji = (max) => {
+  if (max >= 35) return '🌡️'
+  if (max >= 25) return '☀️'
+  if (max >= 18) return '⛅'
+  if (max >= 10) return '🌤️'
+  if (max >= 3) return '🌧️'
+  if (max >= 0) return '🌨️'
+  return '❄️'
+}
+
+const getWeatherDesc = (max) => {
+  if (max >= 35) return 'Very Hot'
+  if (max >= 25) return 'Sunny'
+  if (max >= 18) return 'Partly Cloudy'
+  if (max >= 10) return 'Mild'
+  if (max >= 3) return 'Rainy'
+  if (max >= 0) return 'Snowy'
+  return 'Freezing'
+}
 
 function ForecastChart({ darkMode, forecast }) {
   if (!forecast || forecast.length === 0) return null
 
   return (
-    <div className={`rounded-2xl p-6 ${darkMode ? 'bg-gray-800' : 'bg-white shadow-md'}`}>
-      
-      {/* Header */}
-      <h3 className={`font-semibold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+    <div className={`rounded-xl p-5 h-full flex flex-col ${darkMode ? 'bg-gray-900' : 'bg-white shadow-md'}`}>
+      <h3 className={`text-sm font-semibold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
         7 Day Forecast
       </h3>
-
-      {/* Chart */}
-      <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={forecast} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-          
-          <CartesianGrid 
-            strokeDasharray="3 3" 
-            stroke={darkMode ? '#374151' : '#e5e7eb'} 
-          />
-          
-          <XAxis 
-            dataKey="day" 
-            tick={{ fill: darkMode ? '#9ca3af' : '#6b7280', fontSize: 12 }}
-            axisLine={{ stroke: darkMode ? '#374151' : '#e5e7eb' }}
-          />
-          
-          <YAxis 
-            tick={{ fill: darkMode ? '#9ca3af' : '#6b7280', fontSize: 12 }}
-            axisLine={{ stroke: darkMode ? '#374151' : '#e5e7eb' }}
-          />
-          
-          <Tooltip
-            contentStyle={{
-              backgroundColor: darkMode ? '#1f2937' : '#ffffff',
-              border: darkMode ? '1px solid #374151' : '1px solid #e5e7eb',
-              borderRadius: '8px',
-              color: darkMode ? '#ffffff' : '#111827'
-            }}
-            formatter={(value) => [`${value}°C`]}
-          />
-          
-          <Legend 
-            wrapperStyle={{ 
-              color: darkMode ? '#9ca3af' : '#6b7280',
-              fontSize: '12px'
-            }}
-          />
-          
-          <Bar dataKey="max" name="Max °C" fill="#ef4444" radius={[4, 4, 0, 0]} />
-          <Bar dataKey="min" name="Min °C" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-          
-        </BarChart>
-      </ResponsiveContainer>
-
+      <div className="flex gap-3 h-48">
+        {forecast.map((day, i) => (
+          <div
+            key={i}
+            className={`flex-1 flex flex-col items-center justify-center gap-2 rounded-xl p-3 transition-all
+              ${i === 0
+                ? darkMode ? 'bg-blue-900 bg-opacity-40 border border-blue-500' : 'bg-blue-50 border border-blue-300'
+                : darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-50 hover:bg-gray-100'
+              }`}
+          >
+            <span className={`text-xs font-bold ${i === 0 ? 'text-blue-400' : darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              {i === 0 ? 'Today' : day.day}
+            </span>
+            <span className="text-3xl">{getWeatherEmoji(day.max)}</span>
+            <span className={`text-xs text-center ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              {getWeatherDesc(day.max)}
+            </span>
+            <div className="flex gap-1.5 items-center">
+              <span className="text-sm font-bold text-red-400">{day.max}°</span>
+              <span className="text-xs text-blue-400">{day.min}°</span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

@@ -20,9 +20,7 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [locationStatus, setLocationStatus] = useState('Detecting your location...')
 
-  useEffect(() => {
-    detectLocation()
-  }, [])
+  useEffect(() => { detectLocation() }, [])
 
   const detectLocation = () => {
     if (navigator.geolocation) {
@@ -34,15 +32,12 @@ function App() {
             const city = response.data.city
             setLocationStatus(`📍 ${city}`)
             fetchWeather(city)
-          } catch (error) {
+          } catch {
             setLocationStatus('📍 Sundsvall')
             fetchWeather('Sundsvall')
           }
         },
-        () => {
-          setLocationStatus('📍 Sundsvall')
-          fetchWeather('Sundsvall')
-        }
+        () => { setLocationStatus('📍 Sundsvall'); fetchWeather('Sundsvall') }
       )
     } else {
       setLocationStatus('📍 Sundsvall')
@@ -64,11 +59,8 @@ function App() {
       setWeather(weatherRes.data)
       setForecast(forecastRes.data.forecast)
       setAlerts(alertsRes.data.alerts)
-    } catch (error) {
-      console.error('Error fetching weather:', error)
-    } finally {
-      setLoading(false)
-    }
+    } catch (error) { console.error(error) }
+    finally { setLoading(false) }
   }
 
   const fetchComparison = async (city1, city2) => {
@@ -77,9 +69,7 @@ function App() {
       setCompareData(response.data)
       setTravelData(null)
       setClimateData(null)
-    } catch (error) {
-      console.error('Error fetching comparison:', error)
-    }
+    } catch (error) { console.error(error) }
   }
 
   const fetchTravel = async (city) => {
@@ -88,9 +78,7 @@ function App() {
       setTravelData(response.data)
       setCompareData(null)
       setClimateData(null)
-    } catch (error) {
-      console.error('Error fetching travel data:', error)
-    }
+    } catch (error) { console.error(error) }
   }
 
   const fetchClimate = async (city, startYear = 1970) => {
@@ -99,32 +87,58 @@ function App() {
       setClimateData(response.data)
       setCompareData(null)
       setTravelData(null)
-    } catch (error) {
-      console.error('Error fetching climate data:', error)
-    }
+    } catch (error) { console.error(error) }
   }
 
+  const hasDynamicCard = compareData || travelData || climateData
+
   return (
-    <div className={darkMode ? 'bg-gray-900 min-h-screen' : 'bg-gray-100 min-h-screen'}>
-      <Navbar
-        darkMode={darkMode}
-        setDarkMode={setDarkMode}
-        locationStatus={locationStatus}
-      />
-      <div className="p-6 max-w-4xl mx-auto flex flex-col gap-6">
-        <AlertBanner darkMode={darkMode} alerts={alerts} />
-        <WeatherCard darkMode={darkMode} weather={weather} loading={loading} />
-        <ForecastChart darkMode={darkMode} forecast={forecast} />
-        {compareData && <CompareCard darkMode={darkMode} compareData={compareData} />}
-        {travelData && <TravelCard darkMode={darkMode} travelData={travelData} />}
-        <ChatBox
-          darkMode={darkMode}
-          onWeatherUpdate={fetchWeather}
-          onCompare={fetchComparison}
-          onTravel={fetchTravel}
-          onClimate={fetchClimate}
-        />
-        {climateData && <ClimateChart darkMode={darkMode} climateData={climateData} />}
+    <div className={`flex flex-col h-screen overflow-hidden ${darkMode ? 'bg-gray-950' : 'bg-gray-100'}`}>
+
+      <Navbar darkMode={darkMode} setDarkMode={setDarkMode} locationStatus={locationStatus} />
+
+      {alerts.length > 0 && (
+        <div className="px-3 pt-2 flex-shrink-0">
+          <AlertBanner darkMode={darkMode} alerts={alerts} />
+        </div>
+      )}
+
+      <div className="flex flex-1 gap-3 p-3 overflow-hidden min-h-0">
+
+        {/* LEFT COLUMN */}
+        <div className="flex flex-col gap-3 flex-shrink-0 min-h-0" style={{ width: '420px' }}>
+          <div className="flex-shrink-0">
+            <WeatherCard darkMode={darkMode} weather={weather} loading={loading} />
+          </div>
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <ChatBox
+              darkMode={darkMode}
+              onWeatherUpdate={fetchWeather}
+              onCompare={fetchComparison}
+              onTravel={fetchTravel}
+              onClimate={fetchClimate}
+            />
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN */}
+        <div className="flex flex-col gap-3 flex-1 min-h-0 overflow-hidden">
+
+          {/* Forecast — always fixed height */}
+          <div className="flex-shrink-0" style={{ height: '260px' }}>
+            <ForecastChart darkMode={darkMode} forecast={forecast} />
+          </div>
+
+          {/* Dynamic cards */}
+          {hasDynamicCard && (
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              {compareData && <CompareCard darkMode={darkMode} compareData={compareData} />}
+              {travelData && <TravelCard darkMode={darkMode} travelData={travelData} />}
+              {climateData && <ClimateChart darkMode={darkMode} climateData={climateData} />}
+            </div>
+          )}
+
+        </div>
       </div>
     </div>
   )

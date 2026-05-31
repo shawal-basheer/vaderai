@@ -1,3 +1,4 @@
+import API_URL from './config'
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import Navbar from './components/Navbar'
@@ -28,7 +29,7 @@ function App() {
         async (position) => {
           const { latitude, longitude } = position.coords
           try {
-            const response = await axios.get(`http://127.0.0.1:8000/location?lat=${latitude}&lon=${longitude}`)
+            const response = await axios.get(`${API_URL}/location?lat=${latitude}&lon=${longitude}`)
             const city = response.data.city
             setLocationStatus(`📍 ${city}`)
             fetchWeather(city)
@@ -52,9 +53,9 @@ function App() {
     setClimateData(null)
     try {
       const [weatherRes, forecastRes, alertsRes] = await Promise.all([
-        axios.get(`http://127.0.0.1:8000/weather/${city}`),
-        axios.get(`http://127.0.0.1:8000/forecast/${city}`),
-        axios.get(`http://127.0.0.1:8000/alerts/${city}`)
+        axios.get(`${API_URL}/weather/${city}`),
+        axios.get(`${API_URL}/forecast/${city}`),
+        axios.get(`${API_URL}/alerts/${city}`)
       ])
       setWeather(weatherRes.data)
       setForecast(forecastRes.data.forecast)
@@ -65,7 +66,7 @@ function App() {
 
   const fetchComparison = async (city1, city2) => {
     try {
-      const response = await axios.get(`http://127.0.0.1:8000/compare?city1=${city1}&city2=${city2}`)
+      const response = await axios.get(`${API_URL}/compare?city1=${city1}&city2=${city2}`)
       setCompareData(response.data)
       setTravelData(null)
       setClimateData(null)
@@ -74,7 +75,7 @@ function App() {
 
   const fetchTravel = async (city) => {
     try {
-      const response = await axios.get(`http://127.0.0.1:8000/travel/${city}`)
+      const response = await axios.get(`${API_URL}/travel/${city}`)
       setTravelData(response.data)
       setCompareData(null)
       setClimateData(null)
@@ -83,7 +84,7 @@ function App() {
 
   const fetchClimate = async (city, startYear = 1970) => {
     try {
-      const response = await axios.get(`http://127.0.0.1:8000/climate/${city}?start_year=${startYear}`)
+      const response = await axios.get(`${API_URL}/climate/${city}?start_year=${startYear}`)
       setClimateData(response.data)
       setCompareData(null)
       setTravelData(null)

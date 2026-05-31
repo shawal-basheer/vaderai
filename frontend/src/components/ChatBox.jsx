@@ -98,7 +98,7 @@ function ChatBox({ darkMode, onWeatherUpdate, onCompare, onTravel, onClimate }) 
     setLoading(true)
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/chat', { message: userMessage })
+      const response = await axios.post(`${API_URL}/chat`, { message: userMessage })
       const { response: aiText, action, data } = response.data
       setMessages(prev => [...prev, { role: 'ai', text: aiText }])
 

@@ -2,6 +2,9 @@ import API_URL from '../config'
 import { useState, useRef, useEffect } from 'react'
 import axios from 'axios'
 
+const ELEVENLABS_API_KEY = 'sk_ce844013098a0127b9d2b89c5c186a01c7fb418e656dba16'
+const VOICE_ID = 'onwK4e9ZLuTAKqWW03F9'
+
 function ChatBox({ darkMode, onWeatherUpdate, onCompare, onTravel, onClimate }) {
   const [messages, setMessages] = useState([
     {
@@ -11,6 +14,7 @@ function ChatBox({ darkMode, onWeatherUpdate, onCompare, onTravel, onClimate }) 
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [speaking, setSpeaking] = useState(null)
   const messagesEndRef = useRef(null)
 
   useEffect(() => {
@@ -133,17 +137,31 @@ function ChatBox({ darkMode, onWeatherUpdate, onCompare, onTravel, onClimate }) 
     if (e.key === 'Enter') sendMessage()
   }
 
-  const speak = (text) => {
+const speak = (text, index) => {
+  if (speaking === index) {
     window.speechSynthesis.cancel()
-    const cleanText = text.replace(/[🌤️🌡️💨💧🌍✈️⚠️🔊]/g, '').replace(/\*\*/g, '').replace(/\*/g, '').replace(/#{1,6}/g, '').trim()
-    const utterance = new SpeechSynthesisUtterance(cleanText)
-    utterance.lang = 'en-US'
-    utterance.rate = 0.9
-    const voices = window.speechSynthesis.getVoices()
-    const preferred = voices.find(v => v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha'))
-    if (preferred) utterance.voice = preferred
-    window.speechSynthesis.speak(utterance)
+    setSpeaking(null)
+    return
   }
+
+  setSpeaking(index)
+  window.speechSynthesis.cancel()
+
+  const cleanText = text
+    .replace(/[🌤️🌡️💨💧🌍✈️⚠️🔊]/g, '')
+    .replace(/\*\*/g, '')
+    .replace(/\*/g, '')
+    .replace(/#{1,6}/g, '')
+    .trim()
+
+  const utterance = new SpeechSynthesisUtterance(cleanText)
+  utterance.lang = 'en-GB'
+  utterance.rate = 0.9
+  utterance.pitch = 1.0
+  utterance.onend = () => setSpeaking(null)
+
+  window.speechSynthesis.speak(utterance)
+}
 
   return (
     <div className={`rounded-xl flex flex-col h-full ${darkMode ? 'bg-gray-900' : 'bg-white shadow-md'}`}>
@@ -195,8 +213,15 @@ function ChatBox({ darkMode, onWeatherUpdate, onCompare, onTravel, onClimate }) 
                 {msg.text}
               </div>
               {msg.role === 'ai' && (
-                <button onClick={() => speak(msg.text)} className="text-xs text-green-400 hover:text-green-300 text-left pl-1">
-                  🔊 Speak
+                <button
+                  onClick={() => speak(msg.text, i)}
+                  className={`text-xs text-left pl-1 transition-all ${
+                    speaking === i
+                      ? 'text-red-400 hover:text-red-300'
+                      : 'text-green-400 hover:text-green-300'
+                  }`}
+                >
+                  {speaking === i ? '⏹ Stop' : '🔊 Speak'}
                 </button>
               )}
             </div>

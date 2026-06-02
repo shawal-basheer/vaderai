@@ -24,7 +24,7 @@ The project successfully implements a sophisticated multi-component system consi
 - Advanced data visualization using Matplotlib and Recharts
 - Production deployment on Vercel (frontend) and Render (backend)
 
-All seven planned features have been successfully implemented and deployed to a public URL. The platform is live and accessible at https://vaderai-nine.vercel.app. The project demonstrates how AI agents can solve real-world problems through intelligent data integration and natural language interfaces.
+All seven planned features have been successfully implemented and deployed to a public URL. The platform is live and accessible at https://vader-ai.vercel.app. The project demonstrates how AI agents can solve real-world problems through intelligent data integration and natural language interfaces.
 
 **Keywords:** AI agents, weather intelligence, natural language processing, LangChain, FastAPI, React.js, climate data visualization, Groq API
 
@@ -432,6 +432,11 @@ Display Update
 - Falls back to Sundsvall if permission denied or unavailable
 - Enables seamless first-use experience
 
+**Dynamic Browser Tab Title:**
+- Tab displays current city name for easy identification
+- Updates in real-time as user searches different locations
+- Professional and user-friendly feature
+
 ---
 
 ## 5 Results
@@ -463,6 +468,7 @@ All 7 planned features have been successfully implemented and verified:
 - Responsive design: Works on mobile, tablet, desktop
 - Dark mode: Reduces eye strain, improves usability
 - Accessibility: Keyboard navigation, screen reader support
+- Dynamic tab title: Updates in real-time with current city
 
 **AI Agent Performance:**
 - Query understanding: Correctly interprets various question phrasings
@@ -472,7 +478,7 @@ All 7 planned features have been successfully implemented and verified:
 ### 5.3 Deployment
 
 **Production Environment:**
-- Frontend: Vercel (https://vaderai-nine.vercel.app)
+- Frontend: Vercel (https://vader-ai.vercel.app)
 - Backend: Render (https://vaderai-backend.onrender.com)
 - Database: None (stateless architecture)
 - Cost: $0/month (fully free tier)
@@ -496,6 +502,10 @@ All 7 planned features have been successfully implemented and verified:
 **Decision: Progressive Disclosure UI**
 - Impact: Simpler learning curve, feels more responsive
 - Outcome: Users can discover features through conversation
+
+**Decision: Dynamic Tab Title**
+- Impact: Professional appearance, better UX
+- Outcome: Users can quickly identify which city they're viewing
 
 ---
 
@@ -552,6 +562,7 @@ The project meets the success criteria by enabling users to interact with weathe
 2. **Free Tier APIs:** Surprisingly comprehensive free tiers available for weather, AI, and hosting
 3. **Progressive Disclosure:** Users prefer intelligent interfaces that reveal features dynamically
 4. **Testing Edge Cases:** Weather data has many edge cases (missing cities, climate extremes, time zones)
+5. **UI Polish:** Small touches like dynamic tab titles significantly improve perceived professionalism
 
 ### 6.5 Future Enhancements
 
@@ -635,7 +646,7 @@ vaderai/
 - `backend/agent.py` (68 lines): LangChain AI agent implementation
 - `backend/weather.py` (116 lines): Open-Meteo API integration
 - `backend/climate.py` (75 lines): Historical climate visualization
-- `frontend/src/App.jsx` (93 lines): Main application logic
+- `frontend/src/App.jsx` (98 lines): Main application logic with dynamic tab title
 - `frontend/src/components/ChatBox.jsx`: Chat interface implementation
 
 ---

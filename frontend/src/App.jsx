@@ -23,6 +23,15 @@ function App() {
 
   useEffect(() => { detectLocation() }, [])
 
+  // Update browser tab title when weather changes
+  useEffect(() => {
+    if (weather?.city) {
+      document.title = `${weather.city} - VäderAI`
+    } else {
+      document.title = "VäderAI - Weather Intelligence"
+    }
+  }, [weather])
+
   const detectLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(

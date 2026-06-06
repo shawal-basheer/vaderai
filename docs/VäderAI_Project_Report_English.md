@@ -2,13 +2,12 @@
 
 ## Project Report
 
-**Course:** Advanced Web Development Project  
+**Course:** Applied Computer Engineering DT159G   
 **Title:** VäderAI - An AI-Powered Global Weather Intelligence Agent
 
 **Shawal Basheer**
 
 **MID SWEDEN UNIVERSITY**  
-Department of Information Systems and Technology
 
 ---
 

@@ -9,7 +9,7 @@ An AI-powered global weather intelligence agent built with React and FastAPI.
 -  Real-time global weather for any city
 -  7 day forecast with weather icons
 -  Historical climate data with Matplotlib charts
--  Natural language AI chat powered by Groq LLaMA 3.3
+-  Natural language AI chat powered by Groq
 -  Extreme weather alerts
 -  City comparison
 -  Travel weather advisor
@@ -21,10 +21,18 @@ An AI-powered global weather intelligence agent built with React and FastAPI.
 ## Tech Stack
 - **Frontend** - React, Vite, Tailwind CSS, Recharts
 - **Backend** - Python, FastAPI
-- **AI** - LangChain, Groq API (LLaMA 3.3 70B)
+- **AI** - LangChain, Groq API
 - **Data** - Open-Meteo API (live, historical, climate)
 - **Visualization** - Matplotlib
 - **Hosting** - Vercel + Render
+
+## Groq model configuration
+Groq retires models periodically. Rather than hardcoding a model in the code, this backend reads the model name from the GROQ_MODEL environment variable. If GROQ_MODEL is not provided, the backend defaults to "openai/gpt-oss-20b".
+
+To view available models from Groq, you can query:
+https://api.groq.com/openai/v1/models
+
+When a Groq model is deprecated or inaccessible you should update the GROQ_MODEL value in your environment (for example, in the Render dashboard) rather than changing code.
 
 ## Run Locally
 
@@ -35,14 +43,3 @@ python -m venv venv
 source venv/Scripts/activate
 pip install -r requirements.txt
 uvicorn main:app --reload
-```
-
-### Frontend
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-## Built by
-Shawal Basheer | Mid Sweden University (Mittuniversitetet), Sundsvall, Sweden

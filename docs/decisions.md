@@ -23,6 +23,7 @@ Decision: Used Groq API with llama-3.3-70b-versatile model instead of Claude API
 Reason: Groq is completely free with no credit card required.
 Claude API requires payment after free credits expire.
 llama3-70b-8192 was decommissioned so switched to llama-3.3-70b-versatile.
+Superseded by Decision 11 (22 August 2026).
 
 ## Decision 5 - Frontend Framework
 Date: 1 May 2026
@@ -60,3 +61,9 @@ Date: 15 May 2026
 Decision: Used Web Speech API for text to speech feature.
 Reason: Built into every browser, completely free, zero setup required.
 ElevenLabs considered but Web Speech API sufficient for project scope.
+
+## Decision 11 - Groq model configuration and resilience
+Date: 22 August 2026
+Decision: Move Groq model selection out of source code and into configuration (GROQ_MODEL environment variable). Default to "openai/gpt-oss-20b" when not provided.
+Reason: During 2026 the project experienced two Groq model retirements (llama3-70b-8192 and later llama-3.3-70b-versatile). Because Groq retires and replaces models periodically, hardcoding a model in source caused production outages and repeated code changes. Making the model configurable means future deprecations can be handled by updating environment settings (Render dashboard) instead of code changes and redeploys.
+Notes: The project chose openai/gpt-oss-20b as the default because it offers a balance between cost/free-tier limits and capability for concise weather summaries; openai/gpt-oss-120b is a larger reasoning model but has different cost/rate characteristics and may be overkill for short weather responses. Operators should be aware that different model families may vary in response style and should test the model they choose. The backend also adds a global exception handler and a health endpoint to make model failures visible in logs and to prevent misleading CORS errors surfacing to the frontend.
